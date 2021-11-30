@@ -553,6 +553,8 @@ fn unbounded_tail<T: Read>(reader: &mut BufReader<T>, settings: &Settings) {
 
 fn is_seekable<T: Seek>(file: &mut T) -> bool {
     file.seek(SeekFrom::Current(0)).is_ok()
+        && file.seek(SeekFrom::End(0)).is_ok()
+        && file.seek(SeekFrom::Start(0)).is_ok()
 }
 
 #[inline]
