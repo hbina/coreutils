@@ -446,7 +446,11 @@ fn backwards_thru_file<F>(
 /// `BLOCK_SIZE` until we find the location of the first line/byte. This ends up
 /// being a nice performance win for very large files.
 fn bounded_tail(mut file: &File, settings: &Settings) {
-    let size = file.seek(SeekFrom::End(0)).unwrap();
+    let size = loop {
+        if let Ok(result) = file.seek(SeekFrom::End(0)) {
+            break result;
+        }
+    };
     let mut buf = vec![0; BLOCK_SIZE as usize];
 
     // Find the position in the file to start printing from.
