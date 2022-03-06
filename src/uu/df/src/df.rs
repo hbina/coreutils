@@ -188,10 +188,17 @@ impl Filesystem {
             }
         };
         #[cfg(unix)]
-        let usage = FsUsage::new(statfs(_stat_path).ok()?);
+        {
+            statfs(_stat_path).ok().flatten().map(|statfs| {
+                let usage = FsUsage::new(statfs);
+                Self { mount_info, usage }
+            })
+        }
         #[cfg(windows)]
-        let usage = FsUsage::new(Path::new(&_stat_path));
-        Some(Self { mount_info, usage })
+        {
+            let usage = FsUsage::new(Path::new(&_stat_path));
+            Some(Self { mount_info, usage })
+        }
     }
 }
 
@@ -310,6 +317,7 @@ pub fn uumain(args: impl uucore::Args) -> UResult<()> {
     let opt = Options::from(&matches);
 
     let mounts = read_fs_list();
+
     let data: Vec<Row> = filter_mount_list(mounts, &paths, &opt)
         .into_iter()
         .filter_map(Filesystem::new)
